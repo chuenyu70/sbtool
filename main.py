@@ -466,9 +466,11 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
     region_selectors = []
     for region, tags in sorted(groups.items()):
         region_selectors.append({
-            "type": "selector",
+            "type": "urltest",
             "tag": region,
             "outbounds": tags,
+            "url": "https://www.gstatic.com/generate_204",
+            "interval": "5m",
         })
 
     # 全部
@@ -591,9 +593,11 @@ def fix_config(config: dict) -> dict:
         region_selectors = []
         for region, tags in sorted(groups.items()):
             region_selectors.append({
-                "type": "selector",
+                "type": "urltest",
                 "tag": region,
                 "outbounds": tags,
+                "url": "https://www.gstatic.com/generate_204",
+                "interval": "5m",
             })
 
         # 重建 outbounds：direct, block, Proxy, 规则, 节点, 地区, 全部
