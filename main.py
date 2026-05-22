@@ -573,10 +573,7 @@ def fix_config(config: dict) -> dict:
             rs["url"] = rs["url"].replace("https://mirror.ghproxy.com/", "")
             rs["url"] = rs["url"].replace("https://wiki.jokin.uk/cnip2.srs",
                 "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cn.srs")
-    # 修复 clash_api 端口冲突：9090 留给 yacd 静态页面，clash_api 改用 9091
-    clash = config.get("experimental", {}).get("clash_api", {})
-    if clash.get("external_controller") == "0.0.0.0:9090":
-        clash["external_controller"] = "0.0.0.0:9091"
+    # 不修改 clash_api 端口，保持前端配置
     return config
 
 # ============ API 路由 ============
