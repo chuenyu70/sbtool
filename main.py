@@ -777,10 +777,10 @@ async def upgrade_singbox():
         # 下载
         arch = "amd64"
         url = f"https://github.com/SagerNet/sing-box/releases/download/v{version}/sing-box-{version}-linux-{arch}.tar.gz"
-        subprocess.run(["wget", "-q", url, "-O", "/tmp/sing-box.tar.gz"], check=True, timeout=60)
-        subprocess.run(["tar", "-xzf", "/tmp/sing-box.tar.gz", "-C", "/tmp"], check=True)
-        subprocess.run(["cp", f"/tmp/sing-box-{version}-linux-{arch}/sing-box", "/usr/local/bin/sing-box"], check=True)
-        subprocess.run(["chmod", "+x", "/usr/local/bin/sing-box"], check=True)
+        subprocess.run(["/usr/bin/wget", "-q", url, "-O", "/tmp/sing-box.tar.gz"], check=True, timeout=60)
+        subprocess.run(["/usr/bin/tar", "-xzf", "/tmp/sing-box.tar.gz", "-C", "/tmp"], check=True)
+        subprocess.run(["/usr/bin/cp", f"/tmp/sing-box-{version}-linux-{arch}/sing-box", "/usr/local/bin/sing-box"], check=True)
+        subprocess.run(["/usr/bin/chmod", "+x", "/usr/local/bin/sing-box"], check=True)
 
         # 重启
         subprocess.run(["systemctl", "restart", "singbox"], check=True, timeout=10)
