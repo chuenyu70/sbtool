@@ -720,8 +720,8 @@ async def deploy_config(name: str, target: str = Query("local")):
         else:
             subprocess.run(["sudo", "mkdir", "-p", str(SINGBOX_CONFIG.parent)], check=True)
             subprocess.run(["sudo", "cp", tmp_file, str(SINGBOX_CONFIG)], check=True)
-            subprocess.run(["sudo", "systemctl", "restart", "singbox"], check=True, timeout=10)
-            time.sleep(2)
+            subprocess.run(["sudo", "systemctl", "restart", "singbox"], check=True, timeout=30)
+            time.sleep(3)
             result = subprocess.run(["sudo", "systemctl", "is-active", "singbox"], capture_output=True, text=True)
             if "active" in result.stdout:
                 return {"code": 0, "message": "部署成功，singbox 已重启"}
