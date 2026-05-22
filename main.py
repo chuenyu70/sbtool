@@ -930,8 +930,12 @@ async def sbtool_get_sub(name: str = Query("default")):
 @app.get("/scg/{path:path}")
 async def scg_static(path: str):
     file_path = STATIC_DIR / "scg" / path
-    if file_path.exists():
+    if file_path.is_file():
         return FileResponse(file_path)
+    if file_path.is_dir():
+        index_path = file_path / "index.html"
+        if index_path.is_file():
+            return FileResponse(index_path)
     return HTMLResponse("Not Found", status_code=404)
 
 @app.get("/{path:path}")
