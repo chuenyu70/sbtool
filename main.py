@@ -70,11 +70,28 @@ class ConfigData(BaseModel):
     config: dict
 
 # ============ 工具函数 ============
-def get_region(tag: str) -> Optional[str]:
+# IP 地区缓存
+_ip_region_cache = {}
+
+def get_region(tag: str, server: str = "") -> Optional[str]:
+    # 1. 从 tag 中识别
     parts = tag.upper().replace("-", " ").replace("_", " ").split()
     for p in parts:
         if p in REGION_MAP:
             return REGION_MAP[p]
+    # 2. 从 server IP 反查
+    if server and server not in _ip_region_cache:
+        try:
+            import urllib.request
+            resp = urllib.request.urlopen(f"http://ip-api.com/json/{server}?fields=countryCode", timeout=3)
+            data = json.loads(resp.read())
+            code = data.get("countryCode", "")
+            _ip_region_cache[server] = code
+        except Exception:
+            _ip_region_cache[server] = ""
+    code = _ip_region_cache.get(server, "")
+    if code in REGION_MAP:
+        return REGION_MAP[code]
     return None
 
 def parse_clash_subscription(text: str) -> list[dict]:
@@ -454,12 +471,12 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
         outbounds = nodes_to_singbox_outbounds(nodes)
         outbounds = [ob for ob in outbounds if clean_outbound(ob) is not None]
 
-    node_tags = [o["tag"] for o in outbounds]
-
     # 地区分组
     groups = {}
-    for tag in node_tags:
-        region = get_region(tag)
+    for o in outbounds:
+        tag = o["tag"]
+        server = o.get("server", "")
+        region = get_region(tag, server)
         if region:
             groups.setdefault(region, []).append(tag)
 
@@ -579,14 +596,17 @@ def fix_config(config: dict) -> dict:
 
     # 自动地区分组：从 outbounds 中提取节点并生成地区 selector
     node_tags = []
+    node_servers = {}
     for o in config.get("outbounds", []):
         if o.get("type") in ("vless", "vmess", "trojan", "shadowsocks", "hysteria2"):
-            node_tags.append(o.get("tag", ""))
+            tag = o.get("tag", "")
+            node_tags.append(tag)
+            node_servers[tag] = o.get("server", "")
 
     if node_tags:
         groups = {}
         for tag in node_tags:
-            region = get_region(tag)
+            region = get_region(tag, node_servers.get(tag, ""))
             if region:
                 groups.setdefault(region, []).append(tag)
 
