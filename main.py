@@ -835,10 +835,10 @@ async def upgrade_singbox():
             latest = releases[0]
             version = latest["tag_name"].lstrip("v")
 
-        # 下载（通过代理）
+        # 下载（本机透明代理）
         arch = "amd64"
         url = f"https://github.com/SagerNet/sing-box/releases/download/v{version}/sing-box-{version}-linux-{arch}.tar.gz"
-        subprocess.run(["/usr/bin/wget", "-q", "-e", "use_proxy=yes", "-e", "http_proxy=http://192.168.50.101:8888", url, "-O", "/tmp/sing-box.tar.gz"], check=True, timeout=120)
+        subprocess.run(["/usr/bin/wget", "-q", url, "-O", "/tmp/sing-box.tar.gz"], check=True, timeout=120)
         subprocess.run(["/usr/bin/tar", "-xzf", "/tmp/sing-box.tar.gz", "-C", "/tmp"], check=True)
         subprocess.run(["/usr/bin/cp", f"/tmp/sing-box-{version}-linux-{arch}/sing-box", "/usr/local/bin/sing-box"], check=True)
         subprocess.run(["/usr/bin/chmod", "+x", "/usr/local/bin/sing-box"], check=True)
