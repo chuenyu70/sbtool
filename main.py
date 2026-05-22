@@ -763,20 +763,25 @@ async def deploy_config(name: str, target: str = Query("local")):
 
     try:
         if target == "remote":
-            # 部署到 192.168.50.101，通过 base64 传输
+            # 部署到远程机器，通过 base64 传输
+            remote_host = os.environ.get("REMOTE_HOST", "192.168.50.101")
+            remote_user = os.environ.get("REMOTE_USER", "chuenyu")
+            remote_pw = os.environ.get("REMOTE_PW", "")
+            if not remote_pw:
+                return {"code": 1, "message": "未设置 REMOTE_PW 环境变量"}
             import base64 as b64
             with open(tmp_file, "rb") as f:
                 config_b64 = b64.b64encode(f.read()).decode()
             subprocess.run([
-                "sshpass", "-p", "REMOVED", "ssh", "-o", "StrictHostKeyChecking=no",
-                "chuenyu@192.168.50.101",
-                f"echo REMOVED | sudo -S python3 -c \"import base64,json; c=json.loads(base64.b64decode('{config_b64}')); json.dump(c, open('/root/singbox/config.json','w'), indent=2, ensure_ascii=False)\" && echo REMOVED | sudo -S systemctl restart singbox"
+                "sshpass", "-p", remote_pw, "ssh", "-o", "StrictHostKeyChecking=no",
+                f"{remote_user}@{remote_host}",
+                f"echo {remote_pw} | sudo -S python3 -c \"import base64,json; c=json.loads(base64.b64decode('{config_b64}')); json.dump(c, open('/root/singbox/config.json','w'), indent=2, ensure_ascii=False)\" && echo {remote_pw} | sudo -S systemctl restart singbox"
             ], check=True, timeout=30)
             time.sleep(3)
             result = subprocess.run([
-                "sshpass", "-p", "REMOVED", "ssh", "-o", "StrictHostKeyChecking=no",
-                "chuenyu@192.168.50.101",
-                "echo REMOVED | sudo -S systemctl is-active singbox"
+                "sshpass", "-p", remote_pw, "ssh", "-o", "StrictHostKeyChecking=no",
+                f"{remote_user}@{remote_host}",
+                f"echo {remote_pw} | sudo -S systemctl is-active singbox"
             ], capture_output=True, text=True)
             if "active" in result.stdout:
                 return {"code": 0, "message": "部署到 101 成功，singbox 已重启"}
