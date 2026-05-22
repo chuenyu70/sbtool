@@ -665,6 +665,12 @@ async def create_subscription(sub: SubCreate):
     if not nodes:
         raise HTTPException(400, "未能解析到任何节点")
 
+    # 给节点打上地区标签
+    for n in nodes:
+        region = get_region(n.get("name", ""))
+        if region:
+            n["region"] = region
+
     # 保存
     sub_file = SUBS_DIR / f"{sub.name}.json"
     sub_data = {"name": sub.name, "url": sub.url, "nodes": nodes, "created_at": time.time()}
