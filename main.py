@@ -574,6 +574,62 @@ def fix_config(config: dict) -> dict:
             rs["url"] = rs["url"].replace("https://wiki.jokin.uk/cnip2.srs",
                 "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cn.srs")
     # 不修改 clash_api 端口，保持前端配置
+
+    # 自动地区分组：从 outbounds 中提取节点并生成地区 selector
+    node_tags = []
+    for o in config.get("outbounds", []):
+        if o.get("type") in ("vless", "vmess", "trojan", "shadowsocks", "hysteria2"):
+            node_tags.append(o.get("tag", ""))
+
+    if node_tags:
+        groups = {}
+        for tag in node_tags:
+            region = get_region(tag)
+            if region:
+                groups.setdefault(region, []).append(tag)
+
+        region_selectors = []
+        for region, tags in sorted(groups.items()):
+            region_selectors.append({
+                "type": "selector",
+                "tag": region,
+                "outbounds": tags,
+            })
+
+        # 重建 outbounds：direct, block, Proxy, 规则, 节点, 地区, 全部
+        new_outbounds = []
+        for o in config.get("outbounds", []):
+            if o.get("type") in ("direct", "block"):
+                new_outbounds.append(o)
+            elif o.get("tag") in ("Proxy",):
+                # 更新 Proxy 的 outbounds
+                o["outbounds"] = ["全部"] + [r["tag"] for r in region_selectors]
+                new_outbounds.append(o)
+            elif o.get("tag") in ("Youtube", "Telegram", "Github", "Openai", "Netflix", "Google"):
+                o["outbounds"] = ["Proxy", "全部"] + [r["tag"] for r in region_selectors]
+                new_outbounds.append(o)
+
+        # 添加节点
+        for o in config.get("outbounds", []):
+            if o.get("type") in ("vless", "vmess", "trojan", "shadowsocks", "hysteria2"):
+                new_outbounds.append(o)
+
+        # 添加地区分组
+        new_outbounds.extend(region_selectors)
+
+        # 添加/更新 全部
+        all_outbounds = list(node_tags) + [r["tag"] for r in region_selectors]
+        all_found = False
+        for o in new_outbounds:
+            if o.get("tag") == "全部":
+                o["outbounds"] = all_outbounds
+                all_found = True
+                break
+        if not all_found:
+            new_outbounds.append({"type": "selector", "tag": "全部", "outbounds": all_outbounds})
+
+        config["outbounds"] = new_outbounds
+
     return config
 
 # ============ API 路由 ============
