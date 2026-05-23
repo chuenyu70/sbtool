@@ -626,11 +626,9 @@ def fix_config(config: dict) -> dict:
         region_selectors = []
         for region, tags in sorted(groups.items()):
             region_selectors.append({
-                "type": "urltest",
+                "type": "selector",
                 "tag": region,
                 "outbounds": tags,
-                "url": "https://www.gstatic.com/generate_204",
-                "interval": "5m",
             })
 
         # 重建 outbounds：direct, block, Proxy, 规则, 节点, 地区, 全部
