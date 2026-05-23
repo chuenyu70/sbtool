@@ -483,11 +483,9 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
     region_selectors = []
     for region, tags in sorted(groups.items()):
         region_selectors.append({
-            "type": "urltest",
+            "type": "selector",
             "tag": region,
             "outbounds": tags,
-            "url": "https://www.gstatic.com/generate_204",
-            "interval": "5m",
         })
 
     # 全部
@@ -641,8 +639,9 @@ def fix_config(config: dict) -> dict:
             if o.get("type") in ("direct", "block"):
                 new_outbounds.append(o)
             elif o.get("tag") in ("Proxy",):
-                # 更新 Proxy 的 outbounds
+                # 更新 Proxy 的 outbounds，默认选电信-SIN
                 o["outbounds"] = ["全部"] + [r["tag"] for r in region_selectors]
+                o["default"] = "🇸🇬 新加坡"
                 new_outbounds.append(o)
             elif o.get("tag") in ("Youtube", "Telegram", "Github", "Openai", "Netflix", "Google"):
                 o["outbounds"] = ["Proxy", "全部"] + [r["tag"] for r in region_selectors]
