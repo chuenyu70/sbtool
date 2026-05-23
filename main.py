@@ -589,6 +589,12 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
 
 def fix_config(config: dict) -> dict:
     """修复配置中的常见问题"""
+    # 修复节点 tag 中的 URL 编码
+    from urllib.parse import unquote
+    for o in config.get("outbounds", []):
+        tag = o.get("tag", "")
+        if tag and "%" in tag:
+            o["tag"] = unquote(tag)
     # 修复 UUID 中的 %3A 编码
     for o in config.get("outbounds", []):
         uuid_val = o.get("uuid", "")
