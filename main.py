@@ -567,6 +567,7 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
                 },
             ],
             "rules": [
+                {"inbound": ["tproxy-in"], "action": "sniff"},
                 {"protocol": "dns", "outbound": "direct"},
                 {"rule_set": ["cnip"], "outbound": "direct"},
                 {"domain_suffix": ["cn"], "outbound": "direct"},
@@ -576,6 +577,12 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
         },
         "experimental": {
             "cache_file": {"enabled": True, "path": "/root/singbox/cache.db"},
+            "clash_api": {
+                "external_controller": "0.0.0.0:9090",
+                "external_ui": "ui",
+                "external_ui_download_url": "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip",
+                "external_ui_download_detour": "Proxy",
+            },
         },
     }
     return config
