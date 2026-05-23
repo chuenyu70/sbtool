@@ -592,7 +592,8 @@ def fix_config(config: dict) -> dict:
             rs["url"] = rs["url"].replace("https://mirror.ghproxy.com/", "")
             rs["url"] = rs["url"].replace("https://wiki.jokin.uk/cnip2.srs",
                 "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cn.srs")
-    # 不修改 clash_api 端口，保持前端配置
+    # 移除多余的 dns-in 入站（singbox 内置 DNS 不需要，且会干扰透明代理）
+    config["inbounds"] = [ib for ib in config.get("inbounds", []) if ib.get("tag") != "dns-in"]
 
     # 自动地区分组：从 outbounds 中提取节点并生成地区 selector
     node_tags = []
