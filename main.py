@@ -537,7 +537,7 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
                 "type": "mixed",
                 "tag": "mixed-in",
                 "listen": "0.0.0.0",
-                "listen_port": 2080,
+                "listen_port": 8888,
             },
             {
                 "type": "tproxy",
@@ -833,8 +833,8 @@ async def singbox_status():
         for line in ss_result.stdout.split("\n"):
             if "9090" in line:
                 ports["yacd"] = 9090
-            if "2080" in line:
-                ports["mixed"] = 2080
+            if "8888" in line:
+                ports["mixed"] = 8888
         return {"code": 0, "data": {"status": status, "ports": ports}}
     except Exception as e:
         return {"code": 1, "message": str(e)}
