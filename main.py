@@ -491,7 +491,8 @@ def build_singbox_config(nodes: list[dict], config_name: str = "") -> dict:
         })
 
     # 全部
-    all_outbounds = list(node_tags) + [r["tag"] for r in region_selectors]
+    node_tags = [o["tag"] for o in outbounds]
+    all_outbounds = node_tags + [r["tag"] for r in region_selectors]
     all_selector = {
         "type": "selector",
         "tag": "全部",
